@@ -1,0 +1,145 @@
+{
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "android": {
+        "buildType": "apk"
+      }
+    }
+  }
+}import { useState } from 'react';
+import { View, Text, TextInput, Button, Alert } from 'react-native';
+import { supabase } from '../lib/supabase';
+
+const ADMIN_EMAIL = 'unclediriisa@gmail.com';
+update profiles set is_admin = true, is_verified = true where email = 'unclediriisa@gmail.com';
+
+export default function AuthScreen({ navigation }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [dob, setDob] = useState('');
+
+  const checkAge = () => {
+    const age = new Date().getFullYear() - new Date(dob).getFullYear();
+    return age < 18;
+  }
+
+  const signUp = async () => {
+    const isUnder18 = checkAge();
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if(error) Alert.alert(error.message);
+    else {
+      await supabase.from('profiles').insert([{ 
+        id: data.user.id, email, 
+        is_under_18: isUnder18,
+        is_admin: email === ADMIN_EMAIL,
+        is_private: isUnder18 ? true : false // Auto-private if under 18
+      }]);
+      navigation.replace('Main');
+    }
+  };
+
+  const login = async () => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if(error) Alert.alert(error.message);
+    else {
+      // Check if admin
+      if(email === ADMIN_EMAIL) Alert.alert("Welcome Admin!");
+      navigation.replace('Main');
+    }
+  };
+
+  return (
+    <View style={{padding:20, marginTop:100}}>
+      <Text style={{fontSize:30, fontWeight:'bold'}}>D Shorts</Text>
+      <TextInput placeholder="Email or Phone" onChangeText={setEmail} style={{borderWidth:1, marginTop:20, padding:10}}/>
+      <TextInput placeholder="Password" secureTextEntry onChangeText={setPassword} style={{borderWidth:1, marginTop:10, padding:10}}/>
+      <TextInput placeholder="DOB YYYY-MM-DD (for under-18 protection)" onChangeText={setDob} style={{borderWidth:1, marginTop:10, padding:10}}/>
+      <Button title="Sign Up" onPress={signUp} />
+      <Button title="Login" onPress={login} />
+      <Text style={{marginTop:20}}>Google/Apple login + 2FA will be connected next</Text>
+    </View>
+  )
+}-- PHASE 1: AUTH + PROFILES
+create table profiles (
+  id uuid references auth.users primary key,
+  username text unique, email text, phone text,
+  is_private boolean default false,
+  is_verified boolean default false,
+  is_admin boolean default false,
+  dob date, is_under_18 boolean default false,
+  language text default 'en',
+  coins int default 0, balance decimal default 0,
+  is_banned boolean default false,
+  created_at timestamp default now()
+);
+
+-- PHASE 3: VIDEO SYSTEM
+create table videos (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references profiles(id),
+  video_url text, thumb_url text,
+  caption text, sound_id uuid,
+  is_duet boolean default false, duet_from uuid,
+  allow_download boolean default true,
+  views int default 0, likes int default 0,
+  is_featured boolean default false,
+  created_at timestamp default now()
+);
+
+-- PHASE 4: MUSIC
+create table sounds (
+  id uuid primary key default gen_random_uuid(),
+  title text, artist_id uuid references profiles(id),
+  audio_url text, is_verified_artist boolean default false,
+  youtube_verified boolean default false,
+  uses_count int default 0
+);
+
+-- PHASE 5: MONEY
+create table d_coins_transactions (
+  id uuid primary key default gen_random_uuid(),
+  from_user uuid references profiles(id),
+  to_user uuid references profiles(id),
+  amount int, gift_type text,
+  creator_gets decimal, dshorts_gets decimal,
+  created_at timestamp default now()
+);
+create table shops (id uuid primary key default gen_random_uuid(), owner_id uuid references profiles(id), name text, commission_rate int default 5); me 
+create table businesses (id uuid primary key default gen_random_uuid(), owner_id uuid references profiles(id), is_active boolean default false, expires_at timestamp);
+create table withdrawals (id uuid primary key default gen_random_uuid(), user_id uuid references profiles(id), amount decimal, method text, status text default 'pending');
+
+-- PHASE 6: LIVE
+create table lives (id uuid primary key default gen_random_uuid(), host_id uuid references profiles(id), is_live boolean default true, viewers int default 0);
+
+-- PHASE 7: MODERATION
+create table reports (id uuid primary key default gen_random_uuid(), reporter_id uuid references profiles(id), target_video uuid, reason text, status text default 'pending');
+import { View, Text, Button, ScrollView } from 'react-native'; import { supabase } from '../lib/supabase';
+export default function AdminDashboard(){
+  return(
+    <ScrollView style={{padding:20, marginTop:40}}>
+      <Text style={{fontSize:28, fontWeight:'bold'}}>Admin: unclediriisa@gmail.com</Text>
+      <Text>Users, Videos, Verification, D Coins (70/30 split), Shops 5%, Payments, Business $10+$5, Reports, Featured, Weekly Reports</Text>
+      <Button title="View Reports (Moderation)" onPress={async()=>{
+        let {data}=await supabase.from('reports').select('*'); alert(JSON.stringify(data).slice(0,500));
+      }}/>
+      <Button title="Feature Content" onPress={()=>alert("Set is_featured=true in videos table")}/>
+      <Button title="Approve Business ($10 + $5/mo)" onPress={async()=>{
+        let {data}=await supabase.from('businesses').select('*'); alert("Businesses: "+data?.length);
+      }}/>
+      <Button title="Process Withdrawals (Bank/MTN/Airtel/PayPal)" onPress={async()=>{
+        let {data}=await supabase.from('withdrawals').select('*'); alert(JSON.stringify(data).slice(0,500));
+      }}/>
+    </ScrollView>
+  )
+}
+-- Make you admin
+-- After you sign up once, run this:import { createClient } from '@supabase/supabase-js'
+export const supabase = createClient('YOUR_URL', 'YOUR_ANON_KEY')
+export const ADMIN_EMAIL = 'unclediriisa@gmail.com
+update profiles set is_admin=true, is_verified=true where email='unclediriisa@gmail.com';
