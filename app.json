@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "D Shorts",
+    "slug": "D-shorts",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#000000"
+    },
+    "android": {
+      "package": "com.unclediriisa.dshorts",
+      "versionCode": 1
+    },
+    "platforms": ["android", "web"],
+    "extra": {
+      "adminEmail": "unclediriisa@gmail.com"
+    }
+  }
+}
