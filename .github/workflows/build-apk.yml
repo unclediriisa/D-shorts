@@ -22,25 +22,32 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd D-shorts
+          if [ -d "D-shorts" ]; then cd D-shorts; fi
           npm install --legacy-peer-deps
           npx expo install --fix
 
       - name: Prebuild Android
         run: |
-          cd D-shorts
+          if [ -d "D-shorts" ]; then cd D-shorts; fi
           rm -rf android
           npx expo prebuild --platform android --clean
 
       - name: Fix Gradle Version
         run: |
-          cd D-shorts/android
+          if [ -d "D-shorts/android" ]; then
+            cd D-shorts/android
+          else
+            cd android
+          fi
           sed -i 's/distributionUrl=.*/distributionUrl=https\\:\/\/services.gradle.org\/distributions\/gradle-8.6-all.zip/' gradle/wrapper/gradle-wrapper.properties
-          sed -i "s/id 'com.android.application' version '.*'/id 'com.android.application' version '8.2.1'/" build.gradle || true
 
       - name: Build APK
         run: |
-          cd D-shorts/android
+          if [ -d "D-shorts/android" ]; then
+            cd D-shorts/android
+          else
+            cd android
+          fi
           chmod +x gradlew
           ./gradlew assembleRelease --stacktrace
 
@@ -49,4 +56,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: D-shorts-APK
-          path: D-shorts/android/app/build/outputs/apk/release/*.apk
+          path: |
+            D-shorts/android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/apk/release/*.apk
