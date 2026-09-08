@@ -22,45 +22,30 @@ jobs:
 
       - name: Install dependencies
         run: |
-          if [ -d "D-shorts" ]; then
-            cd D-shorts
-          fi
+          if [ -d "D-shorts" ]; then cd D-shorts; fi
           npm install --legacy-peer-deps
-          npx expo install --fix
 
-      - name: Prebuild Android (clean)
+      - name: Prebuild Android
         run: |
-          if [ -d "D-shorts" ]; then
-            cd D-shorts
-          fi
+          if [ -d "D-shorts" ]; then cd D-shorts; fi
           rm -rf android
           npx expo prebuild --platform android --clean
 
-      - name: Fix Gradle version to 8.6
+      - name: Fix Gradle 8.6 (fixes Expo bug)
         run: |
-          if [ -d "D-shorts/android" ]; then
-            cd D-shorts/android
-          else
-            cd android
-          fi
-          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip" > gradle/wrapper/gradle-wrapper.properties
-          cat gradle/wrapper/gradle-wrapper.properties
+          if [ -d "D-shorts/android" ]; then cd D-shorts/android; else cd android; fi
+          sed -i 's/gradle-.*-all.zip/gradle-8.6-all.zip/' gradle/wrapper/gradle-wrapper.properties
 
       - name: Build APK
         run: |
-          if [ -d "D-shorts/android" ]; then
-            cd D-shorts/android
-          else
-            cd android
-          fi
+          if [ -d "D-shorts/android" ]; then cd D-shorts/android; else cd android; fi
           chmod +x gradlew
-          ./gradlew assembleRelease
+          ./gradlew assembleRelease --stacktrace
 
       - name: Upload APK
-        if: success()
         uses: actions/upload-artifact@v4
         with:
-          name: D-shorts-APK
+          name: D-shorts-APK-unclediriisa
           path: |
             D-shorts/android/app/build/outputs/apk/release/*.apk
             android/app/build/outputs/apk/release/*.apk
