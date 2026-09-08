@@ -5,9 +5,13 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
-    "splash": {
-      "backgroundColor": "#000000"
+       "icon": "./icon.png",
+   "android": {
+     "adaptiveIcon": {
+       "foregroundImage": "./icon.png",
+       "backgroundColor": "#FF1A75"
+     }
+   }
     },
     "android": {
       "package": "com.unclediriisa.dshorts",
