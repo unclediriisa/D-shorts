@@ -1,4 +1,4 @@
-name: Build APK
+name: build
 on:
   workflow_dispatch:
 
@@ -7,26 +7,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
+          
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+
       - name: Install dependencies
-        run: npm install
+        run: |
+          cd D-shorts
+          npm install --legacy-peer-deps
+          npx expo install --fix
+
       - name: Prebuild Android
-        run: npx expo prebuild --platform android --clean
+        run: |
+          cd D-shorts
+          rm -rf android
+          npx expo prebuild --platform android --clean
+
+      - name: Fix Gradle Version
+        run: |
+          cd D-shorts/android
+          sed -i 's/distributionUrl=.*/distributionUrl=https\\:\/\/services.gradle.org\/distributions\/gradle-8.6-all.zip/' gradle/wrapper/gradle-wrapper.properties
+          sed -i "s/id 'com.android.application' version '.*'/id 'com.android.application' version '8.2.1'/" build.gradle || true
+
       - name: Build APK
         run: |
-          cd android
+          cd D-shorts/android
           chmod +x gradlew
-          ./gradlew assembleRelease
+          ./gradlew assembleRelease --stacktrace
+
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: D-shorts-APK
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: D-shorts/android/app/build/outputs/apk/release/*.apk
