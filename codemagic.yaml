@@ -1,3 +1,29 @@
-git add codemagic.yaml
-git commit -m 'Add first workflow'
-git push
+workflows:
+  android-apk:
+    name: D-shorts APK
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      vars:
+        NODE_VERSION: 20
+      node: 20
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install --legacy-peer-deps
+          npx expo install --fix
+      - name: Prebuild Android
+        script: |
+          rm -rf android
+          npx expo prebuild --platform android --clean
+      - name: Build APK with Gradle
+        script: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease
+    artifacts:
+      - android/app/build/outputs/apk/release/*.apk
+    publishing:
+      email:
+        recipients:
+          - unclediriisa@gmail.com
