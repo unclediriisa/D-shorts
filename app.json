@@ -4,18 +4,14 @@
     "slug": "D-shorts",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-       "icon": "./icon.png",
-   "android": {
-     "adaptiveIcon": {
-       "foregroundImage": "./icon.png",
-       "backgroundColor": "#FF1A75"
-     }
-   }
-    },
+    "icon": "./icon.png",
     "android": {
       "package": "com.unclediriisa.dshorts",
-      "versionCode": 1
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./icon.png",
+        "backgroundColor": "#FF1A75"
+      }
     },
     "platforms": ["android", "web"],
     "extra": {
