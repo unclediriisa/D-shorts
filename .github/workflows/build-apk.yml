@@ -7,11 +7,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          
+
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -22,24 +22,29 @@ jobs:
 
       - name: Install dependencies
         run: |
-          if [ -d "D-shorts" ]; then cd D-shorts; fi
+          if [ -d "D-shorts" ]; then
+            cd D-shorts
+          fi
           npm install --legacy-peer-deps
           npx expo install --fix
 
-      - name: Prebuild Android
+      - name: Prebuild Android (clean)
         run: |
-          if [ -d "D-shorts" ]; then cd D-shorts; fi
+          if [ -d "D-shorts" ]; then
+            cd D-shorts
+          fi
           rm -rf android
           npx expo prebuild --platform android --clean
 
-      - name: Fix Gradle Version
+      - name: Fix Gradle version to 8.6
         run: |
           if [ -d "D-shorts/android" ]; then
             cd D-shorts/android
           else
             cd android
           fi
-          sed -i 's/distributionUrl=.*/distributionUrl=https\\:\/\/services.gradle.org\/distributions\/gradle-8.6-all.zip/' gradle/wrapper/gradle-wrapper.properties
+          echo "distributionUrl=https\://services.gradle.org/distributions/gradle-8.6-all.zip" > gradle/wrapper/gradle-wrapper.properties
+          cat gradle/wrapper/gradle-wrapper.properties
 
       - name: Build APK
         run: |
@@ -49,7 +54,7 @@ jobs:
             cd android
           fi
           chmod +x gradlew
-          ./gradlew assembleRelease --stacktrace
+          ./gradlew assembleRelease
 
       - name: Upload APK
         if: success()
